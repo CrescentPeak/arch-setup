@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+lsblk
+
+parted /dev/nvme0n1 mklabel gpt
+parted -a optimal /dev/nvme0n1 mkpart primary fat32 1MiB 1GiB
+parted /dev/nvme0n1 set 1 boot on
+mkfs.fat -F32 /dev/nvme0n1p1
+
+parted -a optimal /dev/nvme0n1 mkpart primary linux-swap 1GiB 17GiB
+mkswap /dev/nvme0n1p2
+swapon /dev/nvme0n1p2
+
+parted -a optimal /dev/nvme0n1 mkpart primary 17GiB 100%
+cryptsetup luksFormat /dev/nvme0n1p3
+cryptsetup open /dev/nvme0n1p3 main
+mkfs.btrfs /dev/mapper/main
+
+mount /dev/mapper/main /mnt
+cd /mnt
+btrfs subvolume create @
+btrfs subvolume create @home
+cd
+pwd
+umount /mnt
+
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/mapper/main /mnt
+mkdir /mnt/home
+mount -o noatime,ssd,compress=zstd,space_cache=v2,discard=async,subvol=@home /dev/mapper/main /mnt/home
+mkdir /mnt/boot
+mount /dev/nvme0n1p1 /mnt/boot
+
+lsblk
