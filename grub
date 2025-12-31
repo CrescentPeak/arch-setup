@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Arch
+grub-mkconfig -o /boot/grub/grub.cfg
+
+UUID_ROOT=$(blkid -s UUID -o value /dev/nvme0n1p3)
+UUID_SWAP=$(blkid -s UUID -o value /dev/nvme0n1p2)
+
+sed -i "/^GRUB_CMDLINE_LINUX_DEFAULT=/s|\"$| loglevel=3 quiet cryptdevice=UUID=$UUID_ROOT root=/dev/mapper/main resume=UUID=$UUID_SWAP\"|" /etc/default/grub
+
+grub-mkconfig -o /boot/grub/grub.cfg
