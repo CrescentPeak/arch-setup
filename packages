@@ -1,0 +1,5 @@
+
+
+pacman-key --init
+pacman-key --populate archlinux
+pacstrap /mnt base linux-lts linux-lts-headers linux-firmware nvim obsidian pacman-contrib fish base-devel btrfs-progs grub efibootmgr networkmanager git ufw nvidia-open-lts nvidia-utils grub-btrfs bluez bluez-utils pipewire pipewire-jack pipewire-pulse alsa-utils fastfetch kitty btrfs-assistant snapper snap-pac reflector sudo --needed
